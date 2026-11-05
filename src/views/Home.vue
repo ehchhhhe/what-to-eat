@@ -657,6 +657,7 @@ import RecipeCard from '@/components/RecipeCard.vue'
 import GlobalNavigation from '@/components/GlobalNavigation.vue'
 import GlobalFooter from '@/components/GlobalFooter.vue'
 import { generateCustomRecipe, generateMultipleRecipesStream, generateRecipe } from '@/services/aiService'
+import { BUILTIN_VISION_URL } from '@/stores/settings'
 import type { Recipe, CuisineType } from '@/types'
 
 // 响应式数据
@@ -826,8 +827,6 @@ const fileToBase64 = (file: File): Promise<string> => {
 
 // 调用 AI 识别图片中的食材
 const recognizeIngredientsFromImage = async (base64Data: string): Promise<string[]> => {
-    const apiKey = import.meta.env.VITE_IMAGE_GENERATION_API_KEY
-
     const systemPrompt = `你是一个专业的冰箱食材识别系统。请严格遵循以下规则处理图片：
 
 识别规则：
@@ -857,14 +856,12 @@ const recognizeIngredientsFromImage = async (base64Data: string): Promise<string
     const userPrompt = '请识别图片中的所有食材，只返回食材名称，用逗号分隔'
 
     try {
-        const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+        const response = await fetch(BUILTIN_VISION_URL, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${apiKey}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'GLM-4.1V-Thinking-Flash',
                 messages: [
                     {
                         role: 'system',
@@ -890,6 +887,9 @@ const recognizeIngredientsFromImage = async (base64Data: string): Promise<string
         })
 
         if (!response.ok) {
+            if (response.status === 501) {
+                throw new Error('站点尚未配置图片识别模型，暂时无法识别图片')
+            }
             throw new Error(`API 请求失败: ${response.status}`)
         }
 

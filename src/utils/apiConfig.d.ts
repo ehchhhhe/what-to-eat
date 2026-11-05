@@ -1,4 +1,5 @@
 export interface TextGenerationConfig {
+    mode: 'builtin' | 'custom'
     baseUrl: string
     apiKey: string
     model: string
@@ -7,6 +8,7 @@ export interface TextGenerationConfig {
 }
 
 export interface ImageGenerationConfig {
+    mode: 'builtin' | 'custom'
     baseUrl: string
     apiKey: string
     model: string
@@ -25,3 +27,4 @@ export declare function createTextGenerationRequest(messages: any[], options?: R
 export declare function createImageGenerationRequest(prompt: string, options?: Record<string, any>): ApiRequestConfig
 export declare function validateTextGenerationConfig(): boolean
 export declare function validateImageGenerationConfig(): boolean
+export declare function isServerNotConfigured(error: unknown): boolean

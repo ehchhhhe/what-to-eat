@@ -1,10 +1,19 @@
 [build]
-  command = "npm install && npx vite build --config vite.config.prod.ts"
+  command = "npm install && npm run build:netlify"
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "18"
+  NODE_VERSION = "20"
   CI = "true"
+
+# /api/ai/* 由 Netlify Function 处理（Functions 2.0 已在函数里声明了 path，
+# 这里的 rewrite 作为兜底，确保不会被下面的 SPA 规则吞掉）。
+# 注意：必须排在 SPA 兜底规则之前。
+[[redirects]]
+  from = "/api/ai/*"
+  to = "/.netlify/functions/ai-proxy/:splat"
+  status = 200
+  force = true
 
 [[redirects]]
   from = "/*"

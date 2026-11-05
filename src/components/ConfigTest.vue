@@ -7,8 +7,9 @@
             <div class="bg-gray-50 rounded-lg p-3">
                 <h4 class="font-medium text-gray-800 mb-2">当前文本生成配置</h4>
                 <div class="text-sm text-gray-600 space-y-1">
+                    <div>模式: {{ textConfig.mode === 'custom' ? '自定义密钥' : '内置服务（密钥在服务端）' }}</div>
                     <div>API地址: {{ textConfig.baseUrl }}</div>
-                    <div>模型: {{ textConfig.model }}</div>
+                    <div>模型: {{ textConfig.model || '由服务端决定' }}</div>
                     <div>温度: {{ textConfig.temperature }}</div>
                     <div>超时: {{ textConfig.timeout }}ms</div>
                 </div>
@@ -17,8 +18,9 @@
             <div class="bg-gray-50 rounded-lg p-3">
                 <h4 class="font-medium text-gray-800 mb-2">当前图片生成配置</h4>
                 <div class="text-sm text-gray-600 space-y-1">
+                    <div>模式: {{ imageConfig.mode === 'custom' ? '自定义密钥' : '内置服务（密钥在服务端）' }}</div>
                     <div>API地址: {{ imageConfig.baseUrl }}</div>
-                    <div>模型: {{ imageConfig.model }}</div>
+                    <div>模型: {{ imageConfig.model || '由服务端决定' }}</div>
                 </div>
             </div>
 

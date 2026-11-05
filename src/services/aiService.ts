@@ -16,6 +16,7 @@ import type {
 import { getTextGenerationConfig } from '@/utils/apiConfig'
 
 // 创建动态axios实例
+// 内置模式（/api/ai/*）下不带 Authorization 头，密钥由服务端代理注入
 const createAiClient = () => {
     const config = getTextGenerationConfig()
     return axios.create({
@@ -23,7 +24,7 @@ const createAiClient = () => {
         timeout: config.timeout,
         headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${config.apiKey}`
+            ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {})
         }
     })
 }
@@ -83,7 +84,7 @@ export const generateRecipe = async (ingredients: string[], cuisine: CuisineType
 
         // 调用AI接口
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -253,7 +254,7 @@ export const generateTableMenu = async (config: {
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -331,7 +332,7 @@ export const generateDishRecipe = async (dishName: string, dishDescription: stri
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -420,7 +421,7 @@ export const generateCustomRecipe = async (ingredients: string[], customPrompt: 
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -551,7 +552,7 @@ export const getNutritionAnalysis = async (recipe: Recipe): Promise<NutritionAna
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -617,7 +618,7 @@ export const getWinePairing = async (recipe: Recipe): Promise<WinePairing> => {
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -905,7 +906,7 @@ export const testAIConnection = async (): Promise<boolean> => {
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'user',
@@ -962,7 +963,7 @@ export const generateDishRecipeByName = async (dishName: string): Promise<Recipe
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1065,7 +1066,7 @@ export const generateSauceRecipe = async (sauceName: string): Promise<SauceRecip
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1167,7 +1168,7 @@ export const recommendSauces = async (preferences: SaucePreference): Promise<str
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1267,7 +1268,7 @@ ${request.customRequirements ? `- 特殊要求：${request.customRequirements}` 
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1352,7 +1353,7 @@ export const getSaucePairings = async (sauceName: string): Promise<string[]> => 
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1416,7 +1417,7 @@ export const generateDailyFortune = async (params: DailyFortuneParams): Promise<
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1499,7 +1500,7 @@ export const generateMoodCooking = async (params: MoodFortuneParams): Promise<Fo
         const aiClient = createAiClient()
         const apiConfig = getTextGenerationConfig()
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1586,7 +1587,7 @@ export const generateCoupleCooking = async (params: CoupleFortuneParams): Promis
         const apiConfig = getTextGenerationConfig()
 
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1668,7 +1669,7 @@ export const generateNumberFortune = async (params: NumberFortuneParams): Promis
         const aiClient = createAiClient()
         const apiConfig = getTextGenerationConfig()
         const response = await aiClient.post('/chat/completions', {
-            model: apiConfig.model,
+            ...(apiConfig.model ? { model: apiConfig.model } : {}),
             messages: [
                 {
                     role: 'system',
@@ -1736,11 +1737,11 @@ export const chatStream = async (
     const url = config.baseUrl.replace(/\/$/, '') + '/chat/completions'
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${config.apiKey}`
+        ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {})
     }
 
     const body = JSON.stringify({
-        model: config.model,
+        ...(config.model ? { model: config.model } : {}),
         messages,
         temperature: config.temperature,
         stream: true

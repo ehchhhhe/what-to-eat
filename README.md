@@ -74,7 +74,7 @@ npm run preview
 
 ### Vercel 部署
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/liu-ziting/what-to-eat&env=VITE_TEXT_GENERATION_BASE_URL,VITE_TEXT_GENERATION_API_KEY,VITE_TEXT_GENERATION_MODEL,VITE_IMAGE_GENERATION_BASE_URL,VITE_IMAGE_GENERATION_API_KEY,VITE_IMAGE_GENERATION_MODEL&envDescription=AI%20API%20配置&envLink=https://github.com/liu-ziting/what-to-eat%23环境变量配置)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/liu-ziting/what-to-eat&env=TEXT_GENERATION_BASE_URL,TEXT_GENERATION_API_KEY,TEXT_GENERATION_MODEL,IMAGE_GENERATION_BASE_URL,IMAGE_GENERATION_API_KEY,IMAGE_GENERATION_MODEL&envDescription=AI%20API%20配置&envLink=https://github.com/liu-ziting/what-to-eat%23环境变量配置)
 
 ### Netlify 部署
 
@@ -88,19 +88,28 @@ npm run preview
 
 > **🌟 模型推荐**: 建议使用高质量 AI 大模型获得更好的菜谱生成效果！不同模型的创意风格和专业程度差异显著。
 
+> **🔐 密钥安全**：模型密钥只从**服务端**环境变量读取，浏览器通过同源的 `/api/ai/*` 代理调用模型。
+> 因此打包产物里不会包含任何密钥，`npm run build` 结束后会自动扫描 `dist/` 做一次兜底校验。
+> 请**不要**给密钥加 `VITE_` 前缀 —— 带前缀的变量会被编译进前端代码。
+
 ```env
 # 菜谱生成模型配置（文本生成）
-VITE_TEXT_GENERATION_BASE_URL=https://********/v1/
-VITE_TEXT_GENERATION_API_KEY=************
-VITE_TEXT_GENERATION_MODEL=******
-VITE_TEXT_GENERATION_TEMPERATURE=0.7
-VITE_TEXT_GENERATION_TIMEOUT=300000
+TEXT_GENERATION_BASE_URL=https://********/v1/
+TEXT_GENERATION_API_KEY=************
+TEXT_GENERATION_MODEL=******
 
 # 图片生成模型配置
-VITE_IMAGE_GENERATION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/images/generations
-VITE_IMAGE_GENERATION_API_KEY=******************
-VITE_IMAGE_GENERATION_MODEL=cogview-3-flash
+IMAGE_GENERATION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/images/generations
+IMAGE_GENERATION_API_KEY=******************
+IMAGE_GENERATION_MODEL=cogview-3-flash
 
+# 图片食材识别（可选，默认复用上面的图片服务密钥）
+VISION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
+VISION_MODEL=GLM-4.1V-Thinking-Flash
+
+# 可公开的前端参数（非敏感，允许带 VITE_ 前缀）
+VITE_AI_TEMPERATURE=0.7
+VITE_AI_TIMEOUT=300000
 ```
 
 ### ⚙️ 动态配置系统

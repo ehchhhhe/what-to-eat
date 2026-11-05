@@ -128,6 +128,44 @@
 
                             <!-- 配置内容区域 - 可滚动 -->
                             <div class="w-full space-y-6 md:flex-1 md:overflow-y-auto md:px-6 md:py-4 md:pr-8">
+                                <!-- 服务模式 -->
+                                <div class="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
+                                    <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-1">
+                                        <svg class="w-5 h-5 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                                        </svg>
+                                        服务模式
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mb-4 ml-8">密钥一律保存在服务端，打包后的前端代码里不会包含任何模型配置</p>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <button
+                                            type="button"
+                                            @click="selectMode('builtin')"
+                                            class="text-left rounded-lg border-2 p-4 transition-colors"
+                                            :class="mode === 'builtin' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+                                        >
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="font-medium text-gray-800">内置服务</span>
+                                                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-600">推荐</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 leading-relaxed">开箱即用，模型与密钥由站点服务端统一管理，浏览器端不持有密钥</p>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            @click="selectMode('custom')"
+                                            class="text-left rounded-lg border-2 p-4 transition-colors"
+                                            :class="mode === 'custom' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'"
+                                        >
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <span class="font-medium text-gray-800">自定义密钥</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 leading-relaxed">使用你自己的模型服务，密钥只保存在当前浏览器本地</p>
+                                        </button>
+                                    </div>
+                                </div>
+
                                 <!-- 菜谱生成模型配置 -->
                                 <div class="bg-white border border-gray-200 rounded-lg p-4 md:p-6">
                                     <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-4">
@@ -144,7 +182,7 @@
 
                                     <div class="space-y-4">
                                         <!-- API地址 -->
-                                        <div>
+                                        <div v-if="isCustomMode">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">API地址</label>
                                             <input
                                                 v-model="textConfig.baseUrl"
@@ -155,9 +193,13 @@
                                             <p class="text-xs text-gray-500 mt-1">基础API地址，系统会自动添加 /chat/completions 路径</p>
                                         </div>
 
+                                        <div v-else class="rounded-md bg-blue-50 border border-blue-100 px-3 py-2 text-xs text-blue-700 leading-relaxed">
+                                            正在使用站点内置模型服务（/api/ai），模型与密钥均由服务端管理，无需填写。
+                                        </div>
+
                                         <!-- 配置项网格 -->
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
+                                            <div v-if="isCustomMode">
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">API密钥</label>
                                                 <input
                                                     v-model="textConfig.apiKey"
@@ -167,7 +209,7 @@
                                                 />
                                             </div>
 
-                                            <div>
+                                            <div v-if="isCustomMode">
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">模型名称</label>
                                                 <input
                                                     v-model="textConfig.model"
@@ -219,7 +261,7 @@
 
                                     <div class="space-y-4">
                                         <!-- API地址 -->
-                                        <div>
+                                        <div v-if="isCustomMode">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">API地址</label>
                                             <input
                                                 v-model="imageConfig.baseUrl"
@@ -230,9 +272,13 @@
                                             <p class="text-xs text-gray-500 mt-1">图片生成API的完整地址，包含具体的端点路径</p>
                                         </div>
 
+                                        <div v-else class="rounded-md bg-green-50 border border-green-100 px-3 py-2 text-xs text-green-700 leading-relaxed">
+                                            正在使用站点内置图片生成服务（/api/ai/image），模型与密钥均由服务端管理，无需填写。
+                                        </div>
+
                                         <!-- 配置项网格 -->
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div>
+                                            <div v-if="isCustomMode">
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">API密钥</label>
                                                 <input
                                                     v-model="imageConfig.apiKey"
@@ -242,7 +288,7 @@
                                                 />
                                             </div>
 
-                                            <div>
+                                            <div v-if="isCustomMode">
                                                 <label class="block text-sm font-medium text-gray-700 mb-2">模型名称</label>
                                                 <input
                                                     v-model="imageConfig.model"
@@ -278,7 +324,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, computed } from 'vue'
 import { useSettingsStore } from '../stores/settings'
 
 const props = defineProps({
@@ -291,6 +337,19 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save'])
 
 const settingsStore = useSettingsStore()
+
+// 服务模式：builtin 使用站点内置服务（密钥在服务端），custom 使用用户自己填写的密钥
+const mode = ref('builtin')
+const isCustomMode = computed(() => mode.value === 'custom')
+
+const selectMode = value => {
+    mode.value = value === 'custom' ? 'custom' : 'builtin'
+    // 从内置模式切到自定义时清掉代理地址，避免把 /api/ai 当成服务商地址
+    if (mode.value === 'custom') {
+        if (!textConfig.baseUrl || textConfig.baseUrl.startsWith('/api/ai')) textConfig.baseUrl = ''
+        if (!imageConfig.baseUrl || imageConfig.baseUrl.startsWith('/api/ai')) imageConfig.baseUrl = ''
+    }
+}
 
 // 配置状态管理
 
@@ -348,6 +407,9 @@ watch(
 const loadCurrentSettings = () => {
     const settings = settingsStore.getSettings()
 
+    // 加载服务模式
+    mode.value = settings.mode === 'custom' ? 'custom' : 'builtin'
+
     // 加载文本生成配置
     textConfig.baseUrl = settings.textGeneration.baseUrl
     textConfig.apiKey = settings.textGeneration.apiKey
@@ -363,18 +425,26 @@ const loadCurrentSettings = () => {
 
 // 保存设置
 const saveSettings = () => {
+    const custom = mode.value === 'custom'
+
+    if (custom && (!textConfig.baseUrl || !textConfig.apiKey || !textConfig.model)) {
+        showToast('自定义模式需要填写 API 地址、密钥和模型名称', 'info')
+        return
+    }
+
     const newSettings = {
+        mode: mode.value,
         textGeneration: {
-            baseUrl: textConfig.baseUrl,
-            apiKey: textConfig.apiKey,
-            model: textConfig.model,
+            baseUrl: custom ? textConfig.baseUrl : '',
+            apiKey: custom ? textConfig.apiKey : '',
+            model: custom ? textConfig.model : '',
             temperature: textConfig.temperature,
             timeout: textConfig.timeout
         },
         imageGeneration: {
-            baseUrl: imageConfig.baseUrl,
-            apiKey: imageConfig.apiKey,
-            model: imageConfig.model
+            baseUrl: custom ? imageConfig.baseUrl : '',
+            apiKey: custom ? imageConfig.apiKey : '',
+            model: custom ? imageConfig.model : ''
         }
     }
 

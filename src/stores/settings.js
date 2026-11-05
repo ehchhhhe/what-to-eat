@@ -1,71 +1,83 @@
-import { ref, reactive } from 'vue'
+import { reactive } from 'vue'
 
-// 默认配置（从环境变量读取）
+/**
+ * 设置中心
+ *
+ * 重要：前端不再从环境变量读取任何 API Key / 模型名。
+ * 默认走站点内置的服务端代理（/api/ai/*），密钥保存在部署平台的环境变量里，
+ * 因此打包产物中不会出现任何模型配置。
+ *
+ * 只有用户主动选择「自定义密钥」时，密钥才会被用户自己填进浏览器 localStorage，
+ * 这属于用户本机的数据，与构建产物无关。
+ */
+
+/** 服务端代理的固定入口（与 server/aiProxy.ts 保持一致） */
+export const BUILTIN_TEXT_BASE_URL = '/api/ai/text'
+export const BUILTIN_IMAGE_BASE_URL = '/api/ai/image/generations'
+export const BUILTIN_VISION_URL = '/api/ai/vision/chat/completions'
+
+/** 新的存储键；旧键里可能残留着被编译进来的密钥，需要清掉 */
+const STORAGE_KEY = 'yifan-fengshen-settings-v2'
+const LEGACY_STORAGE_KEYS = ['yifan-fengshen-settings', 'yifan-fengshen-env-snapshot']
+
+// 允许通过公开环境变量（非敏感）微调默认行为
+const DEFAULT_TEMPERATURE = parseFloat(import.meta.env.VITE_AI_TEMPERATURE) || 0.7
+const DEFAULT_TIMEOUT = parseInt(import.meta.env.VITE_AI_TIMEOUT) || 300000
+
+const purgeLegacyStorage = () => {
+    LEGACY_STORAGE_KEYS.forEach(key => {
+        try {
+            localStorage.removeItem(key)
+        } catch {
+            /* 忽略隐私模式下的异常 */
+        }
+    })
+}
+
 const getDefaultSettings = () => ({
+    // builtin: 使用站点内置代理；custom: 使用用户自己填写的服务商与密钥
+    mode: 'builtin',
     textGeneration: {
-        baseUrl: import.meta.env.VITE_TEXT_GENERATION_BASE_URL,
-        apiKey: import.meta.env.VITE_TEXT_GENERATION_API_KEY,
-        model: import.meta.env.VITE_TEXT_GENERATION_MODEL,
-        temperature: parseFloat(import.meta.env.VITE_TEXT_GENERATION_TEMPERATURE) || 0.7,
-        timeout: parseInt(import.meta.env.VITE_TEXT_GENERATION_TIMEOUT) || 300000
+        baseUrl: BUILTIN_TEXT_BASE_URL,
+        apiKey: '',
+        model: '',
+        temperature: DEFAULT_TEMPERATURE,
+        timeout: DEFAULT_TIMEOUT
     },
     imageGeneration: {
-        baseUrl: import.meta.env.VITE_IMAGE_GENERATION_BASE_URL,
-        apiKey: import.meta.env.VITE_IMAGE_GENERATION_API_KEY,
-        model: import.meta.env.VITE_IMAGE_GENERATION_MODEL
+        baseUrl: BUILTIN_IMAGE_BASE_URL,
+        apiKey: '',
+        model: ''
     }
 })
 
-// 动态获取最新的环境变量配置（用于重置功能）
-const getLatestEnvSettings = () => {
-    // 强制重新读取环境变量
-    return {
-        textGeneration: {
-            baseUrl: import.meta.env.VITE_TEXT_GENERATION_BASE_URL,
-            apiKey: import.meta.env.VITE_TEXT_GENERATION_API_KEY,
-            model: import.meta.env.VITE_TEXT_GENERATION_MODEL,
-            temperature: parseFloat(import.meta.env.VITE_TEXT_GENERATION_TEMPERATURE) || 0.7,
-            timeout: parseInt(import.meta.env.VITE_TEXT_GENERATION_TIMEOUT) || 300000
-        },
-        imageGeneration: {
-            baseUrl: import.meta.env.VITE_IMAGE_GENERATION_BASE_URL,
-            apiKey: import.meta.env.VITE_IMAGE_GENERATION_API_KEY,
-            model: import.meta.env.VITE_IMAGE_GENERATION_MODEL
-        }
-    }
-}
-
-// 存储键名
-const STORAGE_KEY = 'yifan-fengshen-settings'
-
-// 全局设置状态
 let settingsInstance = null
 
 export const useSettingsStore = () => {
     if (!settingsInstance) {
-        // 从localStorage加载设置，如果没有则使用默认设置
+        purgeLegacyStorage()
+
         const loadSettings = () => {
+            const defaults = getDefaultSettings()
             try {
                 const saved = localStorage.getItem(STORAGE_KEY)
                 if (saved) {
                     const parsed = JSON.parse(saved)
-                    // 合并默认设置和保存的设置，确保新增的配置项有默认值
-                    const defaultSettings = getDefaultSettings()
+                    const mode = parsed.mode === 'custom' ? 'custom' : 'builtin'
                     return {
-                        textGeneration: { ...defaultSettings.textGeneration, ...parsed.textGeneration },
-                        imageGeneration: { ...defaultSettings.imageGeneration, ...parsed.imageGeneration }
+                        mode,
+                        textGeneration: { ...defaults.textGeneration, ...(parsed.textGeneration || {}) },
+                        imageGeneration: { ...defaults.imageGeneration, ...(parsed.imageGeneration || {}) }
                     }
                 }
             } catch (error) {
                 console.warn('加载设置失败，使用默认设置:', error)
             }
-            return getDefaultSettings()
+            return defaults
         }
 
-        // 初始化设置
         const settings = reactive(loadSettings())
 
-        // 保存设置到localStorage
         const saveToStorage = () => {
             try {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
@@ -74,93 +86,104 @@ export const useSettingsStore = () => {
             }
         }
 
+        // 内置模式下对外暴露的配置：地址固定指向代理，不携带任何密钥
+        const buildTextConfig = () => {
+            if (settings.mode === 'custom') {
+                return {
+                    mode: 'custom',
+                    baseUrl: settings.textGeneration.baseUrl || '',
+                    apiKey: settings.textGeneration.apiKey || '',
+                    model: settings.textGeneration.model || '',
+                    temperature: Number(settings.textGeneration.temperature) || DEFAULT_TEMPERATURE,
+                    timeout: Number(settings.textGeneration.timeout) || DEFAULT_TIMEOUT
+                }
+            }
+            return {
+                mode: 'builtin',
+                baseUrl: BUILTIN_TEXT_BASE_URL,
+                apiKey: '',
+                model: '',
+                temperature: Number(settings.textGeneration.temperature) || DEFAULT_TEMPERATURE,
+                timeout: Number(settings.textGeneration.timeout) || DEFAULT_TIMEOUT
+            }
+        }
+
+        const buildImageConfig = () => {
+            if (settings.mode === 'custom') {
+                return {
+                    mode: 'custom',
+                    baseUrl: settings.imageGeneration.baseUrl || '',
+                    apiKey: settings.imageGeneration.apiKey || '',
+                    model: settings.imageGeneration.model || ''
+                }
+            }
+            return {
+                mode: 'builtin',
+                baseUrl: BUILTIN_IMAGE_BASE_URL,
+                apiKey: '',
+                model: ''
+            }
+        }
+
         settingsInstance = {
-            // 获取当前设置
             getSettings: () => settings,
 
-            // 获取文本生成配置
-            getTextGenerationConfig: () => settings.textGeneration,
+            getMode: () => settings.mode,
 
-            // 获取图片生成配置
-            getImageGenerationConfig: () => settings.imageGeneration,
+            /** 是否使用站点内置的模型服务 */
+            isBuiltinMode: () => settings.mode !== 'custom',
 
-            // 更新设置
-            updateSettings: (newSettings) => {
+            getTextGenerationConfig: () => buildTextConfig(),
+
+            getImageGenerationConfig: () => buildImageConfig(),
+
+            updateSettings: newSettings => {
+                if (newSettings.mode) {
+                    settings.mode = newSettings.mode === 'custom' ? 'custom' : 'builtin'
+                }
                 if (newSettings.textGeneration) {
                     Object.assign(settings.textGeneration, newSettings.textGeneration)
                 }
                 if (newSettings.imageGeneration) {
                     Object.assign(settings.imageGeneration, newSettings.imageGeneration)
                 }
+                // 回到内置模式时清空本地保存的密钥，避免无意义地留在浏览器里
+                if (settings.mode === 'builtin') {
+                    settings.textGeneration.apiKey = ''
+                    settings.imageGeneration.apiKey = ''
+                }
                 saveToStorage()
             },
 
-            // 更新文本生成配置
-            updateTextGenerationConfig: (config) => {
+            updateTextGenerationConfig: config => {
                 Object.assign(settings.textGeneration, config)
                 saveToStorage()
             },
 
-            // 更新图片生成配置
-            updateImageGenerationConfig: (config) => {
+            updateImageGenerationConfig: config => {
                 Object.assign(settings.imageGeneration, config)
                 saveToStorage()
             },
 
-            // 重置为默认设置
+            /** 重置为默认（内置服务） */
             resetToDefault: () => {
-                const latestSettings = getLatestEnvSettings()
-                Object.assign(settings.textGeneration, latestSettings.textGeneration)
-                Object.assign(settings.imageGeneration, latestSettings.imageGeneration)
+                const defaults = getDefaultSettings()
+                settings.mode = defaults.mode
+                Object.assign(settings.textGeneration, defaults.textGeneration)
+                Object.assign(settings.imageGeneration, defaults.imageGeneration)
                 saveToStorage()
             },
 
-            // 重新加载环境变量配置（用于.env文件修改后的刷新）
-            reloadEnvSettings: () => {
-                // 清除localStorage中的设置，强制重新读取环境变量
-                localStorage.removeItem(STORAGE_KEY)
-
-                // 重新获取最新的环境变量
-                const latestSettings = getLatestEnvSettings()
-                Object.assign(settings.textGeneration, latestSettings.textGeneration)
-                Object.assign(settings.imageGeneration, latestSettings.imageGeneration)
-
-                // 不保存到localStorage，让下次启动时重新读取环境变量
-                console.log('已重新加载环境变量配置，请刷新页面以应用最新配置')
-                return latestSettings
-            },
-
-            // 检查环境变量是否有更新
-            checkEnvUpdates: () => {
-                const currentEnv = getLatestEnvSettings()
-                const currentSettings = settings
-
-                // 比较当前设置和环境变量是否一致
-                const hasUpdates =
-                    currentEnv.textGeneration.baseUrl !== currentSettings.textGeneration.baseUrl ||
-                    currentEnv.textGeneration.apiKey !== currentSettings.textGeneration.apiKey ||
-                    currentEnv.textGeneration.model !== currentSettings.textGeneration.model ||
-                    currentEnv.imageGeneration.baseUrl !== currentSettings.imageGeneration.baseUrl ||
-                    currentEnv.imageGeneration.apiKey !== currentSettings.imageGeneration.apiKey ||
-                    currentEnv.imageGeneration.model !== currentSettings.imageGeneration.model
-
-                return {
-                    hasUpdates,
-                    currentEnv,
-                    currentSettings
-                }
-            },
-
-            // 清除所有设置
             clearSettings: () => {
                 try {
                     localStorage.removeItem(STORAGE_KEY)
-                    const defaultSettings = getDefaultSettings()
-                    Object.assign(settings.textGeneration, defaultSettings.textGeneration)
-                    Object.assign(settings.imageGeneration, defaultSettings.imageGeneration)
                 } catch (error) {
                     console.error('清除设置失败:', error)
                 }
+                const defaults = getDefaultSettings()
+                settings.mode = defaults.mode
+                Object.assign(settings.textGeneration, defaults.textGeneration)
+                Object.assign(settings.imageGeneration, defaults.imageGeneration)
             }
         }
     }

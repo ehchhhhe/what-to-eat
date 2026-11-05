@@ -70,7 +70,7 @@ npm run preview
 
 ### Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/liu-ziting/what-to-eat&env=VITE_TEXT_GENERATION_BASE_URL,VITE_TEXT_GENERATION_API_KEY,VITE_TEXT_GENERATION_MODEL,VITE_IMAGE_GENERATION_BASE_URL,VITE_IMAGE_GENERATION_API_KEY,VITE_IMAGE_GENERATION_MODEL&envDescription=AI%20API%20Configuration&envLink=https://github.com/liu-ziting/what-to-eat%23environment-variables)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/liu-ziting/what-to-eat&env=TEXT_GENERATION_BASE_URL,TEXT_GENERATION_API_KEY,TEXT_GENERATION_MODEL,IMAGE_GENERATION_BASE_URL,IMAGE_GENERATION_API_KEY,IMAGE_GENERATION_MODEL&envDescription=AI%20API%20Configuration&envLink=https://github.com/liu-ziting/what-to-eat%23environment-variables)
 
 ### Deploy to Netlify
 
@@ -84,18 +84,29 @@ npm run preview
 
 > **🚀 Recommended Provider**: This project recommends using [302.AI](https://share.302.AI/DymMSI) AI API services - stable, reliable, supports multiple mainstream large models, and cost-effective!
 
+> **🔐 Key safety**: model keys are read from **server-side** environment variables only; the browser calls
+> the models through the same-origin `/api/ai/*` proxy. No key ever lands in the built bundle, and
+> `npm run build` scans `dist/` afterwards as a safety net. Never prefix a key with `VITE_` —
+> those variables are inlined into the browser code.
+
 ```env
-# Text Generation API (lingyiwanwu.AI)
-VITE_TEXT_GENERATION_BASE_URL=https://api.302ai.cn/v1/
-VITE_TEXT_GENERATION_API_KEY=************
-VITE_TEXT_GENERATION_MODEL=doubao-1.5-pro-32k
-VITE_TEXT_GENERATION_TEMPERATURE=0.7
-VITE_TEXT_GENERATION_TIMEOUT=300000
+# Text Generation API
+TEXT_GENERATION_BASE_URL=https://api.302ai.cn/v1/
+TEXT_GENERATION_API_KEY=************
+TEXT_GENERATION_MODEL=doubao-1.5-pro-32k
 
 # Image Generation API (Zhipu AI)
-VITE_IMAGE_GENERATION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/images/generations
-VITE_IMAGE_GENERATION_API_KEY=******************
-VITE_IMAGE_GENERATION_MODEL=cogview-3-flash
+IMAGE_GENERATION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/images/generations
+IMAGE_GENERATION_API_KEY=******************
+IMAGE_GENERATION_MODEL=cogview-3-flash
+
+# Image ingredient recognition (optional, reuses the image key by default)
+VISION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
+VISION_MODEL=GLM-4.1V-Thinking-Flash
+
+# Public front-end parameters (non-secret)
+VITE_AI_TEMPERATURE=0.7
+VITE_AI_TIMEOUT=300000
 ```
 
 ## 📁 Project Structure

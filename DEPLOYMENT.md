@@ -16,19 +16,43 @@
 
 ## 🔧 环境变量配置
 
-部署前需要配置以下环境变量：
+模型密钥**只在服务端使用**：浏览器请求同源的 `/api/ai/*`，由 Serverless Function 补上密钥后转发给模型服务。
+所以打包出来的 `dist/` 里不含任何模型配置（构建结束会自动扫描产物，发现密钥直接失败）。
+
+> ⚠️ 千万不要把密钥写成 `VITE_` 前缀 —— 带 `VITE_` 的变量会被 Vite 编译进浏览器代码。
+> 只有 `VITE_AI_TEMPERATURE`、`VITE_AI_TIMEOUT` 这类非敏感参数才允许带前缀。
 
 ```env
-# 文本生成 API（零一万物）
-VITE_TEXT_GENERATION_BASE_URL=https://api.lingyiwanwu.com/v1/
-VITE_TEXT_GENERATION_API_KEY=your_text_api_key_here
-VITE_TEXT_GENERATION_MODEL=yi-lightning
+# 文本生成
+TEXT_GENERATION_BASE_URL=https://api.lingyiwanwu.com/v1/
+TEXT_GENERATION_API_KEY=your_text_api_key_here
+TEXT_GENERATION_MODEL=yi-lightning
 
-# 图片生成 API（智谱 AI）
-VITE_IMAGE_GENERATION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
-VITE_IMAGE_GENERATION_API_KEY=your_image_api_key_here
-VITE_IMAGE_GENERATION_MODEL=cogview-3-flash
+# 图片生成
+IMAGE_GENERATION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/images/generations
+IMAGE_GENERATION_API_KEY=your_image_api_key_here
+IMAGE_GENERATION_MODEL=cogview-3-flash
+
+# 图片食材识别（默认复用上面的图片服务密钥）
+VISION_BASE_URL=https://open.bigmodel.cn/api/paas/v4/
+VISION_MODEL=GLM-4.1V-Thinking-Flash
 ```
+
+本地开发：把 `.env.example` 复制成 `.env` 并填入真实密钥即可（`npm run dev` 由 Vite 中间件代理）。
+
+### 代理端点
+
+| 前端请求 | 转发到 |
+| --- | --- |
+| `POST /api/ai/text/chat/completions` | `TEXT_GENERATION_BASE_URL` + `chat/completions`（支持 SSE 流式） |
+| `POST /api/ai/image/generations` | `IMAGE_GENERATION_BASE_URL` |
+| `POST /api/ai/vision/chat/completions` | `VISION_BASE_URL` + `chat/completions` |
+| `GET /api/ai/health` | 返回各路由的密钥是否已配置 |
+
+代理只转发白名单路径、强制使用服务端配置的模型名、做同源校验与简单限流，不会被当成任意 URL 的跳板。
+
+> 如果部署在纯静态环境（如 GitHub Pages，没有 Serverless Function），`/api/ai` 会 404，
+> 此时可在页面的「模型配置」里切到「自定义密钥」，由用户自己提供密钥。
 
 ## 📋 部署步骤
 
@@ -41,7 +65,7 @@ VITE_IMAGE_GENERATION_MODEL=cogview-3-flash
 5. **部署**：Vercel 会自动构建和部署
 
 或者使用一键部署：
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/liu-ziting/what-to-eat&env=VITE_TEXT_GENERATION_BASE_URL,VITE_TEXT_GENERATION_API_KEY,VITE_TEXT_GENERATION_MODEL,VITE_IMAGE_GENERATION_BASE_URL,VITE_IMAGE_GENERATION_API_KEY,VITE_IMAGE_GENERATION_MODEL&envDescription=AI%20API%20配置)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/liu-ziting/what-to-eat&env=TEXT_GENERATION_BASE_URL,TEXT_GENERATION_API_KEY,TEXT_GENERATION_MODEL,IMAGE_GENERATION_BASE_URL,IMAGE_GENERATION_API_KEY,IMAGE_GENERATION_MODEL&envDescription=AI%20API%20配置)
 
 ### Netlify 部署步骤
 
@@ -106,9 +130,9 @@ VITE_IMAGE_GENERATION_MODEL=cogview-3-flash
 
 ### 常见问题
 
-1. **构建失败**：检查环境变量是否正确配置
-2. **页面 404**：确保 SPA 重定向规则已配置
-3. **API 调用失败**：检查 API 密钥和端点配置
+1. **构建失败**：检查环境变量是否正确配置；如果提示「构建产物中发现疑似密钥」，说明有密钥被写成了 `VITE_` 前缀
+2. **页面 404**：确保 SPA 重定向规则已配置（`/api/ai/*` 必须排在兜底规则之前）
+3. **API 调用失败（501 server_not_configured）**：部署平台没有配置对应的 `*_API_KEY`
 4. **静态资源加载失败**：检查构建输出目录配置
 
 ### 调试步骤

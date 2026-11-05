@@ -4,11 +4,12 @@
     "description": "一饭封神 - AI厨艺大师指导平台",
     "scripts": {
         "dev": "vite",
-        "build": "vue-tsc --noEmit && vite build",
-        "build:netlify": "vite build --config vite.config.prod.ts",
-        "build:simple": "vite build --config vite.config.prod.ts",
+        "build": "vue-tsc --noEmit && vite build && node scripts/check-bundle-secrets.mjs",
+        "build:netlify": "vite build --config vite.config.prod.ts && node scripts/check-bundle-secrets.mjs",
+        "build:simple": "vite build --config vite.config.prod.ts && node scripts/check-bundle-secrets.mjs",
         "preview": "vite preview",
-        "type-check": "vue-tsc --noEmit"
+        "type-check": "vue-tsc --noEmit",
+        "check:secrets": "node scripts/check-bundle-secrets.mjs"
     },
     "dependencies": {
         "@vueuse/core": "^10.7.0",

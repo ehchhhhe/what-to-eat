@@ -20,10 +20,11 @@ export const generateRecipeImage = async (recipe: Recipe): Promise<GeneratedImag
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                Authorization: `Bearer ${config.apiKey}`
+                // 内置模式下由服务端代理补上鉴权，前端不持有密钥
+                ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {})
             },
             body: JSON.stringify({
-                model: config.model,
+                ...(config.model ? { model: config.model } : {}),
                 prompt: prompt,
                 size: `${sizeToUse.width}x${sizeToUse.height}`,
                 n: 1,
@@ -33,6 +34,9 @@ export const generateRecipeImage = async (recipe: Recipe): Promise<GeneratedImag
         })
 
         if (!response.ok) {
+            if (response.status === 501) {
+                throw new Error('站点尚未配置图片生成模型，请在设置里填写自己的密钥')
+            }
             throw new Error(`API请求失败: ${response.status}`)
         }
 
