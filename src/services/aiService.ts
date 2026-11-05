@@ -13,13 +13,13 @@ import type {
     CoupleFortuneParams,
     NumberFortuneParams
 } from '@/types'
-import { getTextGenerationConfig } from '@/utils/apiConfig'
+import { getTextGenerationConfig, notifyNotConfigured } from '@/utils/apiConfig'
 
 // 创建动态axios实例
 // 内置模式（/api/ai/*）下不带 Authorization 头，密钥由服务端代理注入
 const createAiClient = () => {
     const config = getTextGenerationConfig()
-    return axios.create({
+    const client = axios.create({
         baseURL: config.baseUrl,
         timeout: config.timeout,
         headers: {
@@ -27,6 +27,17 @@ const createAiClient = () => {
             ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {})
         }
     })
+
+    // 服务端没配模型时，提示用户去填写自己的密钥
+    client.interceptors.response.use(
+        response => response,
+        error => {
+            if (error?.response?.status === 501) notifyNotConfigured('text')
+            return Promise.reject(error)
+        }
+    )
+
+    return client
 }
 
 /**
@@ -1755,6 +1766,7 @@ export const chatStream = async (
         })
 
         if (!response.ok || !response.body) {
+            if (response.status === 501) notifyNotConfigured('text')
             throw new Error(`请求失败: ${response.status}`)
         }
 

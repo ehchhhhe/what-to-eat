@@ -331,6 +331,11 @@ const props = defineProps({
     isVisible: {
         type: Boolean,
         default: false
+    },
+    // 由「去配置」入口传入，打开时默认选中该模式
+    preferredMode: {
+        type: String,
+        default: ''
     }
 })
 
@@ -394,6 +399,10 @@ watch(
     visible => {
         if (visible) {
             loadCurrentSettings()
+            // 「去配置」入口希望直接落到自定义密钥模式
+            if (props.preferredMode === 'custom' && mode.value !== 'custom') {
+                selectMode('custom')
+            }
             // 阻止背景页面滚动
             document.body.style.overflow = 'hidden'
         } else {

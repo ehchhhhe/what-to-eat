@@ -657,7 +657,7 @@ import RecipeCard from '@/components/RecipeCard.vue'
 import GlobalNavigation from '@/components/GlobalNavigation.vue'
 import GlobalFooter from '@/components/GlobalFooter.vue'
 import { generateCustomRecipe, generateMultipleRecipesStream, generateRecipe } from '@/services/aiService'
-import { BUILTIN_VISION_URL } from '@/stores/settings'
+import { getVisionConfig, notifyNotConfigured } from '@/utils/apiConfig'
 import type { Recipe, CuisineType } from '@/types'
 
 // 响应式数据
@@ -802,7 +802,9 @@ const handleImageUpload = async (event: Event) => {
         }
     } catch (error) {
         console.error('图片识别失败:', error)
-        alert('图片识别失败，请重试')
+        // 配置类错误直接告诉用户怎么解决，其余情况给通用提示
+        const message = error instanceof Error && error.message ? error.message : ''
+        alert(message.startsWith('尚未配置') || message.startsWith('站点未配置') ? message : '图片识别失败，请重试')
     } finally {
         isRecognizing.value = false
         // 清空 input，允许重复上传同一文件
@@ -855,13 +857,21 @@ const recognizeIngredientsFromImage = async (base64Data: string): Promise<string
 
     const userPrompt = '请识别图片中的所有食材，只返回食材名称，用逗号分隔'
 
+    // 内置模式走服务端代理；自定义模式用用户自己填写的模型服务
+    const visionConfig = getVisionConfig()
+    if (!visionConfig.url) {
+        throw new Error('尚未配置图片识别服务，请在设置的「自定义密钥」里填写 API 地址、密钥和模型')
+    }
+
     try {
-        const response = await fetch(BUILTIN_VISION_URL, {
+        const response = await fetch(visionConfig.url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                ...(visionConfig.apiKey ? { Authorization: `Bearer ${visionConfig.apiKey}` } : {})
             },
             body: JSON.stringify({
+                ...(visionConfig.model ? { model: visionConfig.model } : {}),
                 messages: [
                     {
                         role: 'system',
@@ -888,7 +898,8 @@ const recognizeIngredientsFromImage = async (base64Data: string): Promise<string
 
         if (!response.ok) {
             if (response.status === 501) {
-                throw new Error('站点尚未配置图片识别模型，暂时无法识别图片')
+                notifyNotConfigured('vision')
+                throw new Error('站点未配置图片识别模型，请在设置里填写你自己的密钥')
             }
             throw new Error(`API 请求失败: ${response.status}`)
         }

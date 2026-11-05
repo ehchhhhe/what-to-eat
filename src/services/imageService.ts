@@ -1,5 +1,5 @@
 import type { Recipe } from '@/types'
-import { getImageGenerationConfig } from '@/utils/apiConfig'
+import { getImageGenerationConfig, getNotConfiguredMessage, notifyNotConfigured } from '@/utils/apiConfig'
 
 export interface GeneratedImage {
     url: string
@@ -9,6 +9,12 @@ export interface GeneratedImage {
 export const generateRecipeImage = async (recipe: Recipe): Promise<GeneratedImage> => {
     // 从设置中获取图片生成配置
     const config = getImageGenerationConfig()
+
+    // 自定义模式下用户可能只填了文本服务，没有填图片服务
+    // 此时不能带着空地址发请求（fetch('') 会请求当前页面本身）
+    if (!config.baseUrl) {
+        throw new Error('尚未配置图片生成服务。菜谱配图与菜谱生成是两个不同的服务，请在设置中填写图片生成的地址、密钥和模型')
+    }
 
     // 构建图片生成的提示词
     const prompt = buildImagePrompt(recipe)
@@ -35,7 +41,8 @@ export const generateRecipeImage = async (recipe: Recipe): Promise<GeneratedImag
 
         if (!response.ok) {
             if (response.status === 501) {
-                throw new Error('站点尚未配置图片生成模型，请在设置里填写自己的密钥')
+                notifyNotConfigured('image')
+                throw new Error(getNotConfiguredMessage('image'))
             }
             throw new Error(`API请求失败: ${response.status}`)
         }

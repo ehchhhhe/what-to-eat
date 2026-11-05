@@ -14,26 +14,50 @@
         </button>
 
         <!-- 设置弹窗 -->
-        <SettingsModal :isVisible="showSettings" @close="closeSettings" @save="onSettingsSaved" />
+        <SettingsModal :isVisible="showSettings" :preferredMode="preferredMode" @close="closeSettings" @save="onSettingsSaved" />
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import SettingsModal from './SettingsModal.vue'
+import { NOT_CONFIGURED_EVENT } from '@/utils/apiConfig'
 
 const showSettings = ref(false)
+const preferredMode = ref('')
+
+let lastNotifyAt = 0
 
 const openSettings = () => {
+    preferredMode.value = ''
     showSettings.value = true
 }
 
 const closeSettings = () => {
     showSettings.value = false
+    preferredMode.value = ''
 }
 
 const onSettingsSaved = () => {
     // 可以在这里添加保存成功的提示
     console.log('设置已保存')
 }
+
+// 服务端没配模型时（501），直接把用户带到配置面板并默认选中「自定义密钥」
+const onNotConfigured = () => {
+    const now = Date.now()
+    // 多个请求可能同时失败，3 秒内只响应一次，避免反复弹窗
+    if (now - lastNotifyAt < 3000) return
+    lastNotifyAt = now
+    preferredMode.value = 'custom'
+    showSettings.value = true
+}
+
+onMounted(() => {
+    window.addEventListener(NOT_CONFIGURED_EVENT, onNotConfigured)
+})
+
+onBeforeUnmount(() => {
+    window.removeEventListener(NOT_CONFIGURED_EVENT, onNotConfigured)
+})
 </script>
