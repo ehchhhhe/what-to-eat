@@ -65,7 +65,7 @@ VISION_MODEL=GLM-4.1V-Thinking-Flash
 5. **部署**：Vercel 会自动构建和部署
 
 或者使用一键部署：
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/liu-ziting/what-to-eat&env=TEXT_GENERATION_BASE_URL,TEXT_GENERATION_API_KEY,TEXT_GENERATION_MODEL,IMAGE_GENERATION_BASE_URL,IMAGE_GENERATION_API_KEY,IMAGE_GENERATION_MODEL&envDescription=AI%20API%20配置)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ehchhhhe/what-to-eat&env=TEXT_GENERATION_BASE_URL,TEXT_GENERATION_API_KEY,TEXT_GENERATION_MODEL,IMAGE_GENERATION_BASE_URL,IMAGE_GENERATION_API_KEY,IMAGE_GENERATION_MODEL&envDescription=AI%20API%20配置)
 
 ### Netlify 部署步骤
 
@@ -80,7 +80,7 @@ VISION_MODEL=GLM-4.1V-Thinking-Flash
 6. **部署**：Netlify 会自动构建和部署
 
 或者使用一键部署：
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/liu-ziting/what-to-eat)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/ehchhhhe/what-to-eat)
 
 ## 🔍 获取 Netlify Site ID
 
