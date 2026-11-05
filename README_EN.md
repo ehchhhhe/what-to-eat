@@ -6,9 +6,9 @@
 
 An AI-powered intelligent recipe generation platform supporting Chinese Eight Great Cuisines + International Cuisine, providing nutritional analysis, wine pairing, recipe image generation, and comprehensive cooking guidance.
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-YiFan_FengShen-yellow?style=for-the-badge)](https://eat.lz-t.top/)
-[![Vercel](https://img.shields.io/badge/🚀_Vercel-yffs.vercel.app-black?style=for-the-badge&logo=vercel)](https://yffs.vercel.app/)
-[![Netlify](https://img.shields.io/badge/🌐_Netlify-whattoeatai.netlify.app-00C7B7?style=for-the-badge&logo=netlify)](https://whattoeatai.netlify.app/)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-eat.gfeather.xyz-yellow?style=for-the-badge)](https://eat.gfeather.xyz/)
+[![Vercel](https://img.shields.io/badge/🚀_Vercel-not_deployed-lightgrey?style=for-the-badge&logo=vercel)](https://github.com/ehchhhhe/what-to-eat#-one-click-deploy)
+[![Netlify](https://img.shields.io/badge/🌐_Netlify-not_deployed-lightgrey?style=for-the-badge&logo=netlify)](https://github.com/ehchhhhe/what-to-eat#-one-click-deploy)
 [![GitHub](https://img.shields.io/badge/GitHub-ehchhhhe/what--to--eat-black?style=for-the-badge&logo=github)](https://github.com/ehchhhhe/what-to-eat)
 
 ## 🚀 Core Features

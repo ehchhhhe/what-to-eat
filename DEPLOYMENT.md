@@ -2,15 +2,19 @@
 
 ## 🚀 支持的部署平台
 
+### 在线演示
+
+-   **地址**: https://eat.gfeather.xyz/
+
 ### Vercel 部署
 
--   **地址**: https://yffs.vercel.app/
+-   **地址**: 待部署（占位）
 -   **特点**: 自动部署、边缘网络、无服务器函数支持
 -   **配置文件**: `vercel.json`
 
 ### Netlify 部署
 
--   **地址**: https://whattoeatai.netlify.app/
+-   **地址**: 待部署（占位）
 -   **特点**: 持续部署、表单处理、重定向规则
 -   **配置文件**: `netlify.toml`
 

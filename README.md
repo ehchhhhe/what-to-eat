@@ -6,9 +6,9 @@
 
 基于 AI 的智能菜谱生成平台，支持中华八大菜系 + 国际料理，提供营养分析、酒水推荐、菜谱效果图生成等功能。
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-一饭封神-yellow?style=for-the-badge)](https://eat.lz-t.top/)
-[![Vercel](https://img.shields.io/badge/🚀_Vercel-yffs.vercel.app-black?style=for-the-badge&logo=vercel)](https://yffs.vercel.app/)
-[![Netlify](https://img.shields.io/badge/🌐_Netlify-whattoeatai.netlify.app-00C7B7?style=for-the-badge&logo=netlify)](https://whattoeatai.netlify.app/)
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-eat.gfeather.xyz-yellow?style=for-the-badge)](https://eat.gfeather.xyz/)
+[![Vercel](https://img.shields.io/badge/%F0%9F%9A%80_Vercel-%E5%BE%85%E9%83%A8%E7%BD%B2-lightgrey?style=for-the-badge&logo=vercel)](https://github.com/ehchhhhe/what-to-eat#-一键部署)
+[![Netlify](https://img.shields.io/badge/%F0%9F%8C%90_Netlify-%E5%BE%85%E9%83%A8%E7%BD%B2-lightgrey?style=for-the-badge&logo=netlify)](https://github.com/ehchhhhe/what-to-eat#-一键部署)
 [![GitHub](https://img.shields.io/badge/GitHub-ehchhhhe/what--to--eat-black?style=for-the-badge&logo=github)](https://github.com/ehchhhhe/what-to-eat)
 [![Config System](https://img.shields.io/badge/⚙️_Dynamic_Config-Real--time_AI_Settings-blue?style=for-the-badge)](https://github.com/ehchhhhe/what-to-eat#%EF%B8%8F-动态配置系统)
 
